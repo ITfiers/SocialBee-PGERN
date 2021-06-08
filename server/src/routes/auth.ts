@@ -31,11 +31,28 @@ router.post(
     const hashedPassword = await Password.hash(body.password);
 
     try {
+      const emailReponse = await pool.query(
+        "SELECT * FROM users WHERE email = $1",
+        [req.body.email]
+      );
+      const usernameResponse = await pool.query(
+        "SELECT * FROM users WHERE username = $1",
+        [req.body.username]
+      );
+
+      if (emailReponse.rowCount > 0) {
+        return res.status(400).json({ message: "email already taken" });
+      }
+
+      if (usernameResponse.rowCount > 0) {
+        return res.status(400).json({ message: "username already taken" });
+      }
+
       const response = await pool.query(
         "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
         [body.username, body.email, hashedPassword]
       );
-      res.status(201).send(response.rows);
+      res.status(201).json({});
     } catch (error) {
       console.error(error);
 
@@ -73,9 +90,12 @@ router.post(
 
       const user = response.rows[0];
 
-      const isValid = await Password.compare(req.body.password, user.password);
+      const passwordMatch = await Password.compare(
+        req.body.password,
+        user.password
+      );
 
-      if (!isValid)
+      if (!passwordMatch)
         return res.status(400).json({ error: "Invalid email or password" });
 
       res.status(200).send(true);
