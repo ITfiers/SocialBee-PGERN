@@ -1,13 +1,16 @@
 import { Router } from "express";
-import { pool } from "../db/pool";
+import { db } from "../db";
+import { v4 as uuidv4 } from "uuid";
+
 import { UserDto } from "../types/dtos";
 
 const router = Router();
 
 router.get("/api/users", async (req, res) => {
   try {
-    const response = await pool.query("SELECT * FROM users;");
-    res.json(response.rows);
+    const data = await db.users.findMany();
+
+    res.status(200).json(data);
   } catch (error) {
     return res.status(500).send("Some error happened");
   }
@@ -21,11 +24,15 @@ router.post("/api/users", async (req, res) => {
     return res.status(400).send();
 
   try {
-    const response = await pool.query(
-      "INSERT INTO users (id, username, email, avatar) VALUES (gen_random_uuid(), $1, $2, $3)",
-      [body.username, body.email, body.avatar]
-    );
-    res.status(201).send(response.rows);
+    const data = await db.users.create({
+      data: {
+        id: uuidv4(),
+        email: body.email,
+        username: body.username,
+        avatar: body.avatar,
+      },
+    });
+    res.status(201).send(data);
   } catch (error) {
     console.error(error);
     res.status(500).send("Some error happened");

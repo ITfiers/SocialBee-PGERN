@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model comments {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  description    String?
+  post_id        String?          @db.Uuid
+  user_id        String?          @db.Uuid
+  posts          posts?           @relation(fields: [post_id], references: [id])
+  users          users?           @relation(fields: [user_id], references: [id])
+  comments_likes comments_likes[]
+}
+
+model comments_likes {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String?   @db.Uuid
+  comment_id String?   @db.Uuid
+  comments   comments? @relation(fields: [comment_id], references: [id])
+  users      users?    @relation(fields: [user_id], references: [id])
+}
+
+model post_likes {
+  id      String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id String? @db.Uuid
+  post_id String? @db.Uuid
+  posts   posts?  @relation(fields: [post_id], references: [id])
+  users   users?  @relation(fields: [user_id], references: [id])
+}
+
+model posts {
+  id          String       @id @db.Uuid
+  description String?
+  image       String?
+  user_id     String?      @db.Uuid
+  users       users?       @relation(fields: [user_id], references: [id])
+  comments    comments[]
+  post_likes  post_likes[]
+}
+
+model users {
+  id             String           @id @db.Uuid
+  username       String?          @db.VarChar(100)
+  email          String?          @db.VarChar(255)
+  avatar         String?
+  comments       comments[]
+  comments_likes comments_likes[]
+  post_likes     post_likes[]
+  posts          posts[]
+}

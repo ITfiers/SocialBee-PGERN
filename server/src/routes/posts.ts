@@ -1,23 +1,25 @@
 import { Router } from "express";
-import { pool } from "../db/pool";
+import { db } from "../db";
 import { Post } from "../types";
 
 const router = Router();
 
 router.get("/api/posts", async (req, res) => {
-  const response = await pool.query<Post[]>("SELECT * FROM posts;", []);
+  const data = await db.posts.findMany();
 
-  res.status(200).json(response.rows);
+  res.status(200).json(data);
 });
 
 router.get("/api/posts/:postId", async (req, res) => {
   const postId = req.params.postId;
 
-  const response = await pool.query<Post>("SELECT * FROM posts WHERE id = $1", [
-    postId,
-  ]);
+  const data = await db.posts.findFirst({
+    where: {
+      id: postId,
+    },
+  });
 
-  res.status(200).json(response.rows[0]);
+  res.status(200).json(data);
 });
 
 export { router as postsRouter };
