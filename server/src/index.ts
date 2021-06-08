@@ -4,7 +4,8 @@ import { logger } from "./middlewares/logger";
 import { postsRouter } from "./routes/posts";
 import { usersRouter } from "./routes/users";
 import morgan from "morgan";
-import config from "config";
+
+import { authRouter } from "./routes/auth";
 
 const app = express();
 const PORT = 5000;
@@ -19,6 +20,7 @@ if (app.get("env") === "development") {
 // Routers
 app.use(postsRouter);
 app.use(usersRouter);
+app.use(authRouter);
 
 app.use((req, res) => {
   res.status(404).send("No page found");

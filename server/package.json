@@ -13,13 +13,16 @@
   "license": "ISC",
   "dependencies": {
     "@types/config": "0.0.38",
+    "bcrypt": "^5.0.1",
     "config": "^3.3.6",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
+    "express-validator": "^6.11.1",
     "morgan": "^1.10.0",
     "pg": "^8.6.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
     "@types/express": "^4.17.12",
     "@types/morgan": "^1.9.2",
     "@types/pg": "^8.6.0",
