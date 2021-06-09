@@ -2,7 +2,6 @@ import express from "express";
 import { pool } from "./db/pool";
 import { logger } from "./middlewares/logger";
 import { postsRouter } from "./routes/posts";
-import { usersRouter } from "./routes/users";
 import morgan from "morgan";
 import cookieSession from "cookie-session";
 
@@ -26,10 +25,9 @@ app.use(
 
 // Routers
 app.use(postsRouter);
-app.use(usersRouter);
 app.use(authRouter);
 
-app.use((req, res) => {
+app.all("*", (req, res) => {
   res.status(404).send("No page found");
 });
 

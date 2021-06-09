@@ -1,11 +1,10 @@
 import { Router } from "express";
 import { pool } from "../db/pool";
-import { UserDto } from "../types/dtos";
+import { SignInDto, SignUpDto } from "../types/dtos";
 import { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 import { Password } from "../services/password";
-import jwt from "jsonwebtoken";
-import { Token } from "../services/token";
+import { JwtPayload, Token } from "../services/token";
 
 const router = Router();
 
@@ -28,9 +27,9 @@ router.post(
       return res.status(400).json(errors);
     }
 
-    const body = req.body as UserDto;
+    const { email, password, username, avatar } = req.body as SignUpDto;
 
-    const hashedPassword = await Password.hash(body.password);
+    const hashedPassword = await Password.hash(password);
 
     try {
       const emailReponse = await pool.query(
@@ -50,15 +49,12 @@ router.post(
         return res.status(400).json({ message: "username already taken" });
       }
 
-      const response = await pool.query(
-        "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username;",
-        [body.username, body.email, hashedPassword]
+      const response = await pool.query<JwtPayload>(
+        "INSERT INTO users (username, email, password, avatar) VALUES ($1, $2, $3, $4) RETURNING id, username;",
+        [username, email, hashedPassword, avatar]
       );
 
-      const token = Token.sign({
-        id: response.rows[0].id,
-        username: response.rows[0].username,
-      });
+      const token = Token.sign(response.rows[0]);
 
       req.session = {
         jwt: token,
@@ -90,11 +86,12 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ error: "Invalid email or password" });
     }
+    const { email, password } = req.body as SignInDto;
 
     try {
       const response = await pool.query(
         "SELECT * FROM users WHERE email = $1;",
-        [req.body.email]
+        [email]
       );
       // if user exist in db
       if (response.rowCount === 0)
@@ -102,10 +99,7 @@ router.post(
 
       const user = response.rows[0];
 
-      const passwordMatch = await Password.compare(
-        req.body.password,
-        user.password
-      );
+      const passwordMatch = await Password.compare(password, user.password);
 
       if (!passwordMatch)
         return res.status(400).json({ error: "Invalid email or password" });
