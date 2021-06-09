@@ -4,6 +4,8 @@ import { UserDto } from "../types/dtos";
 import { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 import { Password } from "../services/password";
+import jwt from "jsonwebtoken";
+import { Token } from "../services/token";
 
 const router = Router();
 
@@ -49,9 +51,19 @@ router.post(
       }
 
       const response = await pool.query(
-        "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
+        "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username;",
         [body.username, body.email, hashedPassword]
       );
+
+      const token = Token.sign({
+        id: response.rows[0].id,
+        username: response.rows[0].username,
+      });
+
+      req.session = {
+        jwt: token,
+      };
+
       res.status(201).json({});
     } catch (error) {
       console.error(error);
@@ -81,7 +93,7 @@ router.post(
 
     try {
       const response = await pool.query(
-        "SELECT * FROM users WHERE email = $1",
+        "SELECT * FROM users WHERE email = $1;",
         [req.body.email]
       );
       // if user exist in db
@@ -97,13 +109,23 @@ router.post(
 
       if (!passwordMatch)
         return res.status(400).json({ error: "Invalid email or password" });
+      const token = Token.sign({ id: user.id, username: user.username });
 
-      res.status(200).send(true);
+      req.session = {
+        jwt: token,
+      };
+
+      res.status(200).json({});
     } catch (error) {
       console.error(error);
       res.status(500).send("Some error occurred");
     }
   }
 );
+
+router.post("/api/auth/signout", (req, res) => {
+  req.session = null;
+  res.status(200).send();
+});
 
 export { router as authRouter };
