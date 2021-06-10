@@ -12,3 +12,10 @@ export interface User {
     avatar: string
     password: string
 }
+
+export interface Comment {
+    id: string
+    description: string
+    post_id: string
+    user_id: string
+}
