@@ -1,9 +1,9 @@
-import { JwtPayload } from "../services/token";
+import { JwtPayload } from "../services/token"
 
 declare global {
-  namespace Express {
-    export interface Request {
-      user?: JwtPayload;
+    namespace Express {
+        export interface Request {
+            user?: JwtPayload
+        }
     }
-  }
 }

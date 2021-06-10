@@ -1,16 +1,16 @@
 export interface SignUpDto {
-  username: string;
-  email: string;
-  avatar?: string;
-  password: string;
+    username: string
+    email: string
+    avatar?: string
+    password: string
 }
 
 export interface SignInDto {
-  email: string;
-  password: string;
+    email: string
+    password: string
 }
 
 export interface CreatePostDto {
-  image: string;
-  description: string;
+    image: string
+    description: string
 }
