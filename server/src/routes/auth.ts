@@ -4,7 +4,8 @@ import { SignInDto, SignUpDto } from "../types/dtos";
 import { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
 import { Password } from "../services/password";
-import { JwtPayload, Token } from "../services/token";
+import { Token } from "../services/token";
+import { UsersRepository } from "../repos/usersRepository";
 
 const router = Router();
 
@@ -32,29 +33,25 @@ router.post(
     const hashedPassword = await Password.hash(password);
 
     try {
-      const emailReponse = await pool.query(
-        "SELECT * FROM users WHERE email = $1",
-        [req.body.email]
-      );
-      const usernameResponse = await pool.query(
-        "SELECT * FROM users WHERE username = $1",
-        [req.body.username]
-      );
+      const userByEmail = await UsersRepository.findByEmail(email);
+      const userWithUsername = await UsersRepository.findByUsername(username);
 
-      if (emailReponse.rowCount > 0) {
+      if (!userByEmail) {
         return res.status(400).json({ message: "email already taken" });
       }
 
-      if (usernameResponse.rowCount > 0) {
+      if (!userWithUsername) {
         return res.status(400).json({ message: "username already taken" });
       }
 
-      const response = await pool.query<JwtPayload>(
-        "INSERT INTO users (username, email, password, avatar) VALUES ($1, $2, $3, $4) RETURNING id, username;",
-        [username, email, hashedPassword, avatar]
-      );
+      const userResponse = await UsersRepository.insertOne({
+        email,
+        hashedPassword,
+        username,
+        avatar,
+      });
 
-      const token = Token.sign(response.rows[0]);
+      const token = Token.sign(userResponse);
 
       req.session = {
         jwt: token,
@@ -89,15 +86,10 @@ router.post(
     const { email, password } = req.body as SignInDto;
 
     try {
-      const response = await pool.query(
-        "SELECT * FROM users WHERE email = $1;",
-        [email]
-      );
+      const user = await UsersRepository.findByEmail(email);
       // if user exist in db
-      if (response.rowCount === 0)
+      if (!user)
         return res.status(400).json({ error: "Invalid email or password" });
-
-      const user = response.rows[0];
 
       const passwordMatch = await Password.compare(password, user.password);
 

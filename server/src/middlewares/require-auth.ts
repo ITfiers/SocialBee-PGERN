@@ -7,9 +7,9 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
   if (!token) return res.status(401).send("Not Authorized");
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_KEY!) as JwtPayload;
+    const jwtPayload = jwt.verify(token, process.env.JWT_KEY!) as JwtPayload;
 
-    req.user = decoded;
+    req.user = jwtPayload;
 
     next();
   } catch (error) {

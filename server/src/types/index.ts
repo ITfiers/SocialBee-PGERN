@@ -4,3 +4,11 @@ export interface Post {
   image: string;
   user_id: string;
 }
+
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  avatar: string;
+  password: string;
+}
