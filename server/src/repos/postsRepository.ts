@@ -1,10 +1,11 @@
+import { db } from "../db"
 import { pool } from "../db/pool"
 import { Post } from "../types"
 
 export class PostsRepository {
     static async findMany(): Promise<Post[]> {
-        const response = await pool.query<Post>("SELECT * FROM posts;")
-        return response.rows
+        const response = (await db.posts.findMany()) as Post[]
+        return response
     }
 
     static async findById(id: string): Promise<Post | undefined> {
