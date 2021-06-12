@@ -36,3 +36,7 @@ Content-Type: application/json
     "description": "Scenery",
     "image": "https://images.pexels.com/photos/258109/pexels-photo-258109.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500"
 }
+
+###
+GET http://localhost:5000/api/auth/current HTTP/1.1
+Content-Type: application/json

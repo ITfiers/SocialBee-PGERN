@@ -4,6 +4,7 @@ import { logger } from "./middlewares/logger"
 import { postsRouter } from "./routes/posts"
 import morgan from "morgan"
 import cookieSession from "cookie-session"
+import cors from "cors"
 
 import { authRouter } from "./routes/auth"
 
@@ -11,6 +12,7 @@ const app = express()
 const PORT = 5000
 
 // Middleware
+
 app.use(express.json())
 
 if (app.get("env") === "development") {
@@ -20,6 +22,14 @@ if (app.get("env") === "development") {
 app.use(
     cookieSession({
         signed: false,
+    })
+)
+
+app.use(
+    cors({
+        origin: "http://localhost:3000",
+        methods: ["POST", "PUT", "GET", "OPTIONS", "HEAD"],
+        credentials: true,
     })
 )
 

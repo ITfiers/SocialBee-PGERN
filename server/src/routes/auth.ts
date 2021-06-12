@@ -5,6 +5,7 @@ import { body, validationResult } from "express-validator"
 import { Password } from "../services/password"
 import { Token } from "../services/token"
 import { UsersRepository } from "../repos/usersRepository"
+import { requireAuth } from "../middlewares/require-auth"
 
 const router = Router()
 
@@ -37,11 +38,11 @@ router.post(
                 username
             )
 
-            if (!userByEmail) {
+            if (userByEmail) {
                 return res.status(400).json({ message: "email already taken" })
             }
 
-            if (!userWithUsername) {
+            if (userWithUsername) {
                 return res
                     .status(400)
                     .json({ message: "username already taken" })
@@ -122,6 +123,10 @@ router.post(
 router.post("/api/auth/signout", (req, res) => {
     req.session = null
     res.status(200).send()
+})
+
+router.get("/api/auth/current", requireAuth, (req, res) => {
+    res.json(req.user)
 })
 
 export { router as authRouter }

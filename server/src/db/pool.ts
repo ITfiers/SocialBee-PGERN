@@ -12,5 +12,5 @@ dotenv.config()
 // });
 
 export const pool = new Pool({
-    connectionString: process.env.DB_CONNECTION_STRING,
+    connectionString: process.env.DB_CONNECTION_STRING!,
 })
